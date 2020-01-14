@@ -4,9 +4,12 @@ import geopandas as gpd
 from scipy.spatial import Voronoi, voronoi_plot_2d
 import matplotlib.pyplot as plt
 import shapely
+import os
 
+DATA_DIR = "GeoNames"
 
-def load_geonames(allcountries_path, admin5_path=None):
+def load_geonames(data_dir=DATA_DIR, include_admin5=False):
+    geonames_path = os.path.join(data_dir, "allCountries.txt")
     col_names = [
         "geonameid",
         "name",
@@ -50,13 +53,14 @@ def load_geonames(allcountries_path, admin5_path=None):
         "modification_date": object,
     }
     geonames = pd.read_table(
-        allcountries_path,
+        geonames_path,
         names=col_names,
         dtype=col_types,
         nrows=None,
         index_col="geonameid",
     )
-    if admin5_path:
+    if include_admin5:
+        admin5_path = os.path.join(data_dir, "adminCode5.txt")
         admincode5 = pd.read_table(
             admin5_path,
             names=["geonameid", "admin5_code"],
@@ -68,7 +72,8 @@ def load_geonames(allcountries_path, admin5_path=None):
     return geonames
 
 
-def load_admin2_codes(admin2_codes_path):
+def load_admin2_codes(data_dir=DATA_DIR):
+    admin2_codes_path = os.path.join(data_dir, "admin2Codes.txt")
     col_names = ["concatenated_codes", "name", "asciiname", "geonameid"]
     col_types = {
         "concatenated_codes": str,
@@ -80,3 +85,26 @@ def load_admin2_codes(admin2_codes_path):
         admin2_codes_path, names=col_names, dtype=col_types, index_col="geonameid"
     )
     return admin2_codes
+
+
+def load_shapes(data_dir=DATA_DIR):
+    shapes_file = os.path.join(data_dir, "shapes_all_low.txt")
+    col_names = [
+        "geonameid",
+        "geojson"
+    ]
+    col_types = {
+        "geonameid": np.int64,
+        "geojson": str
+    }
+    shapes = pd.read_table(shapes_file,
+                           names=col_names,
+                           dtype=col_types,
+                           index_col="geonameid",
+                           header=0)
+    return shapes
+
+def load_shapes_combined(data_dir=DATA_DIR):
+    shapes_file = os.path.join(data_dir, "shapes_simplified_low.json")
+
+
