@@ -5,10 +5,14 @@ from scipy.spatial import Voronoi, voronoi_plot_2d
 import matplotlib.pyplot as plt
 import shapely
 import os
+import requests
+from . import data
 
-DATA_DIR = "GeoNames"
+DATA_DIR = os.path.dirname(data.__file__)
+GEONAMES_DIR = os.path.join(DATA_DIR, "GeoNames")
 
-def load_geonames(data_dir=DATA_DIR, include_admin5=False):
+
+def load_geonames(data_dir=GEONAMES_DIR, include_admin5=False):
     geonames_path = os.path.join(data_dir, "allCountries.txt")
     col_names = [
         "geonameid",
@@ -72,7 +76,7 @@ def load_geonames(data_dir=DATA_DIR, include_admin5=False):
     return geonames
 
 
-def load_admin2_codes(data_dir=DATA_DIR):
+def load_admin2_codes(data_dir=GEONAMES_DIR):
     admin2_codes_path = os.path.join(data_dir, "admin2Codes.txt")
     col_names = ["concatenated_codes", "name", "asciiname", "geonameid"]
     col_types = {
@@ -87,7 +91,7 @@ def load_admin2_codes(data_dir=DATA_DIR):
     return admin2_codes
 
 
-def load_shapes(data_dir=DATA_DIR):
+def load_shapes(data_dir=GEONAMES_DIR):
     shapes_file = os.path.join(data_dir, "shapes_all_low.txt")
     col_names = [
         "geonameid",
@@ -104,7 +108,8 @@ def load_shapes(data_dir=DATA_DIR):
                            header=0)
     return shapes
 
-def load_shapes_combined(data_dir=DATA_DIR):
+def load_shapes_combined(data_dir=GEONAMES_DIR):
     shapes_file = os.path.join(data_dir, "shapes_simplified_low.json")
+    shapes["geometry"] = [shapely.geometry.shape(json.loads(s)).buffer(0) for s in shapes.geojson]
 
 
