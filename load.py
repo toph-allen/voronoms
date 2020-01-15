@@ -4,16 +4,15 @@ import geopandas as gpd
 from scipy.spatial import Voronoi, voronoi_plot_2d
 import matplotlib.pyplot as plt
 import shapely
-import os
+from pathlib import Path
 import requests
+import json
 from . import data
-
-DATA_DIR = os.path.dirname(data.__file__)
-GEONAMES_DIR = os.path.join(DATA_DIR, "GeoNames")
+from .download import geonames_file
 
 
-def load_geonames(data_dir=GEONAMES_DIR, include_admin5=False):
-    geonames_path = os.path.join(data_dir, "allCountries.txt")
+def geonames(include_admin5=False):
+    geonames_path = geonames_file("allCountries.txt")
     col_names = [
         "geonameid",
         "name",
@@ -64,7 +63,7 @@ def load_geonames(data_dir=GEONAMES_DIR, include_admin5=False):
         index_col="geonameid",
     )
     if include_admin5:
-        admin5_path = os.path.join(data_dir, "adminCode5.txt")
+        admin5_path = geonames_file("adminCode5.txt")
         admincode5 = pd.read_table(
             admin5_path,
             names=["geonameid", "admin5_code"],
@@ -76,8 +75,8 @@ def load_geonames(data_dir=GEONAMES_DIR, include_admin5=False):
     return geonames
 
 
-def load_admin2_codes(data_dir=GEONAMES_DIR):
-    admin2_codes_path = os.path.join(data_dir, "admin2Codes.txt")
+def admin2_codes():
+    admin2_codes_path = geonames_file("admin2Codes.txt")
     col_names = ["concatenated_codes", "name", "asciiname", "geonameid"]
     col_types = {
         "concatenated_codes": str,
@@ -91,8 +90,8 @@ def load_admin2_codes(data_dir=GEONAMES_DIR):
     return admin2_codes
 
 
-def load_shapes(data_dir=GEONAMES_DIR):
-    shapes_file = os.path.join(data_dir, "shapes_all_low.txt")
+def shapes():
+    shapes_file = geonames_file("shapes_all_low.txt")
     col_names = [
         "geonameid",
         "geojson"
@@ -106,10 +105,12 @@ def load_shapes(data_dir=GEONAMES_DIR):
                            dtype=col_types,
                            index_col="geonameid",
                            header=0)
+    shapes["geometry"] = [shapely.geometry.shape(json.loads(s)).buffer(0) for s in shapes.geojson]
     return shapes
 
-def load_shapes_combined(data_dir=GEONAMES_DIR):
-    shapes_file = os.path.join(data_dir, "shapes_simplified_low.json")
-    shapes["geometry"] = [shapely.geometry.shape(json.loads(s)).buffer(0) for s in shapes.geojson]
-
+def world_geometry():
+    geometry = list(shapes().geometry)
+    geometry_collection = shapely.geometry.collection.GeometryCollection(geometry)
+    world_geometry = shapely.ops.unary_union(geometry_collection)
+    return world_geometry
 

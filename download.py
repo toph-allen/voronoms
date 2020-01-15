@@ -4,8 +4,8 @@ from zipfile import ZipFile
 from io import BytesIO
 from . import data
 
-DATA_DIR = os.path.dirname(data.__file__)
-GEONAMES_DIR = os.path.join(DATA_DIR, "GeoNames")
+DATA_DIR = Path(data.__file__).parent
+GEONAMES_DIR = Path(DATA_DIR, "GeoNames")
 
 def geonames_file(target_name):
     geonames_url = "http://download.geonames.org/export/dump/"
