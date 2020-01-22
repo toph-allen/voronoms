@@ -7,12 +7,64 @@ import shapely
 from pathlib import Path
 import requests
 import json
+import pickle
 from . import data
-from .download import geonames_file, DATA_DIR
+from .download import geonames_file
 from pickle import dump, load
+from tqdm.notebook import tqdm
 
 
+DATA_DIR = Path(data.__file__).parent
+
+
+def check_cache(pickle_name):
+    def decorator(fn):
+        def decorated(*args, **kwargs):
+            pickle_path = Path(DATA_DIR, pickle_name)
+            if pickle_path.exists():
+                with open(pickle_path, "rb") as f:
+                    print("Loading cached '{}'.".format(pickle_name))
+                    return pickle.load(f)
+            print("Building from original file.")
+            built_dataset = fn(*args, **kwargs)
+            with open(pickle_path, "wb") as f:
+                pickle.dump(built_dataset, f)
+            print("Saved '{}' to cache.".format(pickle_name))
+            return built_dataset
+        return decorated
+    return decorator
+
+
+def delete_cached(pickle_name):
+    pickle_path = Path(DATA_DIR, pickle_name)
+    pickle_path.unlink()
+
+
+@check_cache("geonames.pickle")
 def geonames(include_admin5=False):
+    geonames = base_geonames()
+
+    points = []
+    for coords in tqdm(zip(geonames.longitude, geonames.latitude), total = len(geonames)):
+        points.append(shapely.geometry.point.Point(coords))
+    geonames["points"] = points
+
+    if include_admin5:
+        admin5_path = geonames_file("adminCode5.txt")
+        admincode5 = pd.read_table(
+            admin5_path,
+            names=["geonameid", "admin5_code"],
+            dtype={"geonameid": np.int64, "admin5_code": str},
+            nrows=None,
+            index_col="geonameid",
+        )
+        geonames = geonames.merge(right=admincode5, how="left", on="geonameid")
+
+    return geonames
+
+
+
+def base_geonames():
     geonames_path = geonames_file("allCountries.txt")
     col_names = [
         "geonameid",
@@ -63,19 +115,10 @@ def geonames(include_admin5=False):
         nrows=None,
         index_col="geonameid",
     )
-    if include_admin5:
-        admin5_path = geonames_file("adminCode5.txt")
-        admincode5 = pd.read_table(
-            admin5_path,
-            names=["geonameid", "admin5_code"],
-            dtype={"geonameid": np.int64, "admin5_code": str},
-            nrows=None,
-            index_col="geonameid",
-        )
-        geonames = geonames.merge(right=admincode5, how="left", on="geonameid")
     return geonames
 
 
+@check_cache("admin2_codes.pickle")
 def admin2_codes():
     admin2_codes_path = geonames_file("admin2Codes.txt")
     col_names = ["concatenated_codes", "name", "asciiname", "geonameid"]
@@ -91,6 +134,23 @@ def admin2_codes():
     return admin2_codes
 
 
+@check_cache("admin1_codes.pickle")
+def admin1_codes():
+    admin1_codes_path = geonames_file("admin1CodesASCII.txt")
+    col_names = ["concatenated_codes", "name", "asciiname", "geonameid"]
+    col_types = {
+        "concatenated_codes": str,
+        "name": str,
+        "asciiname": str,
+        "geonameid": np.int64,
+    }
+    admin1_codes = pd.read_table(
+        admin1_codes_path, names=col_names, dtype=col_types, index_col="geonameid"
+    )
+    return admin1_codes
+
+
+@check_cache("hierarchy.pickle")
 def hierarchy():
     hierarchy_path = geonames_file("hierarchy.txt")
     col_names = [
@@ -110,6 +170,7 @@ def hierarchy():
     return hierarchy
 
 
+@check_cache("shapes.pickle")
 def shapes():
     shapes_file = geonames_file("shapes_all_low.txt")
     col_names = [
@@ -129,23 +190,11 @@ def shapes():
     return shapes
 
 
-def world_geometry(cache=True):
-    cached_path = Path(DATA_DIR, "world_geometry.pickle")
-    if cache and cached_path.exists():
-        try:
-            with open(cached_path, "rb") as f:
-                world_geometry = load(f)
-            print("Loaded cached 'world_geometry.pickle'")
-            return world_geometry
-        except Exception as e:
-            print("Could not load cached geometry data.")
+@check_cache("world_geometry.pickle")
+def world_geometry():
     print("Joining world geometry. This takes a few minutes.")
     geometry = list(shapes().geometry)
     geometry_collection = shapely.geometry.collection.GeometryCollection(geometry)
     world_geometry = shapely.ops.unary_union(geometry_collection)
-    if cache:
-        print("Saving world geometry to 'world_geometry.pickle'.")
-        with open(cached_path, "wb") as f:
-            dump(world_geometry, f)
     return world_geometry
 

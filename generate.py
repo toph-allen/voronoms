@@ -5,11 +5,12 @@ from scipy.spatial import Voronoi, voronoi_plot_2d
 import matplotlib.pyplot as plt
 import shapely
 
-def generate_voronoms(country, admin_level, geonames, shapes):
+# Get the polygons for a country
+def generate_voronoms(country, admin_level, geonames, shapes, prune_singletons=False):
     admin_cols = ["admin{}_code".format(i) for i in range(1, admin_level + 1)]
 
     # Get the admin geonames we'll be finding polygons for.
-    admin_predicate = "country_code == '{}' & feature_class == 'A'".format(country)
+    admin_predicate = "country_code == '{}' & feature_class == 'A' & feature_code == 'ADM{}'".format(country, admin_level)
     admin_geonameids = (
         geonames.query(admin_predicate).loc[:, admin_cols].
         drop_duplicates().dropna()
@@ -71,22 +72,29 @@ def generate_voronoms(country, admin_level, geonames, shapes):
             2. Uses Shapely's unary union function to join all the polygons.
             3. Intersects the resulting shape with the country's outlines.
         """
-        non_singleton_cells = []
-        for cell in admin_voronoi_cells:
-                # Because we don't need to _count_ the number of adjacent regions,
-                # we iterate through until we find an adjacent region, and as soon as we
-                # find a neighbor we add it to the list of regions to include.
-            any_neighbors = False
-            for other_cell in admin_voronoi_cells:
-                if cell.touches(other_cell):
-                    any_neighbors = True
-                    break
-            if any_neighbors == True:
-                non_singleton_cells.append(cell)
+        # TODO: COMMENT OUT THIS BLOCK AND TRY RUNNING FOR US STATES
 
-        admin_multipolygon = shapely.geometry.MultiPolygon(non_singleton_cells)
-        admin_polygon = shapely.ops.unary_union(admin_multipolygon).intersection(country_outline)
-        # The following line should actually come after the unary union but before the intersection.
-        # polygon = polygon.simplify(tolerance = 0.02).buffer(0)
-        admin_polygons.append(admin_polygon)
+        if prune_singletons:
+            non_singleton_cells = []
+            for cell in admin_voronoi_cells:
+                    # Because we don't need to _count_ the number of adjacent regions,
+                    # we iterate through until we find an adjacent region, and as soon as we
+                    # find a neighbor we add it to the list of regions to include.
+                any_neighbors = False
+                for other_cell in admin_voronoi_cells:
+                    if cell.touches(other_cell):
+                        any_neighbors = True
+                        break
+                if any_neighbors == True:
+                    non_singleton_cells.append(cell)
+            admin_voronoi_cells = non_singleton_cells 
+
+        if len(admin_voronoi_cells) is not 0:
+            admin_multipolygon = shapely.geometry.MultiPolygon(admin_voronoi_cells).buffer(0)
+            admin_polygon = shapely.ops.unary_union(admin_multipolygon).intersection(country_outline)
+            # The following line should actually come after the unary union but before the intersection.
+            # polygon = polygon.simplify(tolerance = 0.02).buffer(0)
+            admin_polygons.append(admin_polygon)
+        else:
+            continue
     return admin_polygons

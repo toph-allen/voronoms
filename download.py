@@ -3,32 +3,12 @@ from pathlib import Path
 from zipfile import ZipFile
 from io import BytesIO
 from . import data
-from . import load
+
 
 DATA_DIR = Path(data.__file__).parent
 GEONAMES_DIR = Path(DATA_DIR, "GeoNames")
 if not GEONAMES_DIR.exists():
     GEONAMES_DIR.mkdir(parents=True)
-
-
-def cached_file(target_name):
-    pickle_name = Path(target_name).stem + ".pickle"
-    pickle_path = Path(DATA_DIR, pickle_name)
-    if cached_path.exists():
-        try:
-            with open(cached_path, "rb") as f:
-                target = load(f)
-            print("Loaded cached 'world_geometry.pickle'")
-            return target
-        except Exception as e:
-            raise Exception("Could not load cached geometry data.")
-    else:
-        raise Exception("No cached file exists.")
-
-
-def build_from_file(target_name):
-    # function = load. + target_name
-    pass
 
 
 def geonames_file(target_name):
