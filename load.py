@@ -37,10 +37,10 @@ def check_cache(pickle_name):
 
 def delete_cached(pickle_name):
     pickle_path = Path(DATA_DIR, pickle_name)
-    pickle_path.unlink()
+    pickle_path.unlink(missing_ok=True)
 
 
-@check_cache("geonames.pickle")
+# @check_cache("geonames.pickle")
 def geonames(include_admin5=False):
     geonames = base_geonames()
 
@@ -61,7 +61,6 @@ def geonames(include_admin5=False):
         geonames = geonames.merge(right=admincode5, how="left", on="geonameid")
 
     return geonames
-
 
 
 def base_geonames():
