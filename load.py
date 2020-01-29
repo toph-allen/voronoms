@@ -31,7 +31,9 @@ def check_cache(pickle_name):
                 pickle.dump(built_dataset, f)
             print("Saved '{}' to cache.".format(pickle_name))
             return built_dataset
+
         return decorated
+
     return decorator
 
 
@@ -45,7 +47,7 @@ def geonames(include_admin5=False):
     geonames = base_geonames()
 
     points = []
-    for coords in tqdm(zip(geonames.longitude, geonames.latitude), total = len(geonames)):
+    for coords in tqdm(zip(geonames.longitude, geonames.latitude), total=len(geonames)):
         points.append(shapely.geometry.point.Point(coords))
     geonames["points"] = points
 
@@ -152,40 +154,24 @@ def admin1_codes():
 @check_cache("hierarchy.pickle")
 def hierarchy():
     hierarchy_path = geonames_file("hierarchy.txt")
-    col_names = [
-        "parent",
-        "child",
-        "type"
-    ]
+    col_names = ["parent", "child", "type"]
 
-    col_types = {
-        "parent": np.int64,
-        "child": np.int64,
-        "type": str
-    }
-    hierarchy = pd.read_table(hierarchy_path,
-                              names=col_names,
-                              dtype=col_types)
+    col_types = {"parent": np.int64, "child": np.int64, "type": str}
+    hierarchy = pd.read_table(hierarchy_path, names=col_names, dtype=col_types)
     return hierarchy
 
 
 @check_cache("shapes.pickle")
 def shapes():
     shapes_file = geonames_file("shapes_all_low.txt")
-    col_names = [
-        "geonameid",
-        "geojson"
+    col_names = ["geonameid", "geojson"]
+    col_types = {"geonameid": np.int64, "geojson": str}
+    shapes = pd.read_table(
+        shapes_file, names=col_names, dtype=col_types, index_col="geonameid", header=0
+    )
+    shapes["geometry"] = [
+        shapely.geometry.shape(json.loads(s)).buffer(0) for s in shapes.geojson
     ]
-    col_types = {
-        "geonameid": np.int64,
-        "geojson": str
-    }
-    shapes = pd.read_table(shapes_file,
-                           names=col_names,
-                           dtype=col_types,
-                           index_col="geonameid",
-                           header=0)
-    shapes["geometry"] = [shapely.geometry.shape(json.loads(s)).buffer(0) for s in shapes.geojson]
     return shapes
 
 
@@ -196,4 +182,3 @@ def world_geometry():
     geometry_collection = shapely.geometry.collection.GeometryCollection(geometry)
     world_geometry = shapely.ops.unary_union(geometry_collection)
     return world_geometry
-
