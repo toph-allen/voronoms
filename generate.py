@@ -6,11 +6,13 @@ import matplotlib.pyplot as plt
 import shapely
 
 # Get the polygons for a country
-def generate_voronoms(country, admin_level, geonames, shapes, prune_singletons=False):
+def generate_voronoms(country, admin_level, geonames, shapes):
+    # Get the polygons for a country
     admin_cols = ["admin{}_code".format(i) for i in range(1, admin_level + 1)]
 
     # Get the admin geonames we'll be finding polygons for.
     admin_predicate = "country_code == '{}' & feature_class == 'A' & feature_code == 'ADM{}'".format(country, admin_level)
+
     admin_geonameids = (
         geonames.query(admin_predicate).loc[:, admin_cols].
         drop_duplicates().dropna()
@@ -41,13 +43,16 @@ def generate_voronoms(country, admin_level, geonames, shapes, prune_singletons=F
     country_voronoi = Voronoi([x.coords[0] for x in voronoi_geonames.points])
     print("Done.")
 
+    # Polygon-generating loop
     admin_polygons = []
     for geonameid, admin_geoname in tqdm(admin_geonames.iterrows(), total = len(admin_geonames)):
+        print("Working on {}...".format(admin_geoname.name))
         # Get the indices of the voronoi regions in this admin area
         polygon_predicate_parts = ["country_code == '{}'".format(country)]
         for col in admin_cols:
             polygon_predicate_parts.append("{} == @admin_geoname.{}".format(col, col))
         polygon_predicate = " & ".join(polygon_predicate_parts)
+
         polygon_geonames = geonames.query(polygon_predicate)
         polygon_geonameids = polygon_geonames.index
 
@@ -59,10 +64,12 @@ def generate_voronoms(country, admin_level, geonames, shapes, prune_singletons=F
 
         # Get the points for the regions and make them into Polygons
         admin_voronoi_cells = []
-        for i in cell_indices:
+        for cell_idx in cell_indices:
+            vert_indices = country_voronoi.regions[cell_idx]
+            if -1 in vert_indices:
+                continue
             cell = shapely.geometry.Polygon(
-                [country_voronoi.vertices[vert_idx]
-                 for vert_idx in country_voronoi.regions[i]]
+                [country_voronoi.vertices[vert_idx] for vert_idx in vert_indices]
             )
             admin_voronoi_cells.append(cell)
         """
@@ -73,28 +80,32 @@ def generate_voronoms(country, admin_level, geonames, shapes, prune_singletons=F
             3. Intersects the resulting shape with the country's outlines.
         """
         # TODO: COMMENT OUT THIS BLOCK AND TRY RUNNING FOR US STATES
+#         non_singleton_cells = []
+#         for cell in admin_voronoi_cells:
+#                 # Because we don't need to _count_ the number of adjacent regions,
+#                 # we iterate through until we find an adjacent region, and as soon as we
+#                 # find a neighbor we add it to the list of regions to include.
+#             any_neighbors = False
+#             for other_cell in admin_voronoi_cells:
+#                 if cell.touches(other_cell):
+#                     any_neighbors = True
+#                     break
+#             if any_neighbors == True:
+#                 non_singleton_cells.append(cell)
+#         admin_voronoi_cells = non_singleton_cells 
 
-        if prune_singletons:
-            non_singleton_cells = []
-            for cell in admin_voronoi_cells:
-                    # Because we don't need to _count_ the number of adjacent regions,
-                    # we iterate through until we find an adjacent region, and as soon as we
-                    # find a neighbor we add it to the list of regions to include.
-                any_neighbors = False
-                for other_cell in admin_voronoi_cells:
-                    if cell.touches(other_cell):
-                        any_neighbors = True
-                        break
-                if any_neighbors == True:
-                    non_singleton_cells.append(cell)
-            admin_voronoi_cells = non_singleton_cells 
-
-        if len(admin_voronoi_cells) is not 0:
+        if len(admin_voronoi_cells) != 0:
             admin_multipolygon = shapely.geometry.MultiPolygon(admin_voronoi_cells).buffer(0)
             admin_polygon = shapely.ops.unary_union(admin_multipolygon).intersection(country_outline)
             # The following line should actually come after the unary union but before the intersection.
             # polygon = polygon.simplify(tolerance = 0.02).buffer(0)
             admin_polygons.append(admin_polygon)
         else:
+            print("Error with {}.".format(admin_geoname.name))
             continue
-    return admin_polygons
+    try:
+        admin_geonames["geometry"] = admin_polygons
+        return admin_geonames
+    except error:
+        print("Could not return geonames DataFrame; returning list instead.")
+        return admin_polygons
