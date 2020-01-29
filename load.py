@@ -40,7 +40,7 @@ def delete_cached(pickle_name):
     pickle_path.unlink(missing_ok=True)
 
 
-# @check_cache("geonames.pickle")
+@check_cache("geonames.pickle")
 def geonames(include_admin5=False):
     geonames = base_geonames()
 
