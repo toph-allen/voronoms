@@ -25,7 +25,6 @@ def polygons(polys, name=None, xlim=None, ylim=None, figsize=(12, 12), dpi=300):
         try:
             ax.add_patch(PolygonPatch(poly, facecolor=color, linewidth=0.1))
         except ValueError as e:
-            print("No value exists for area {}.".format(i))
             continue
     ax.autoscale()
     ax.set_title(name)
@@ -47,11 +46,14 @@ def polygon_subplots(polys, names=None, columns=2, figsize=(12, 24), dpi=300):
     if len(polys) % columns != 0:
         rows += 1
     for i, (poly, name, color) in enumerate(zip(polys, names, colors)):
-        ax = fig.add_subplot(rows, columns, i + 1)
-        ax.axis("equal")
-        ax.add_patch(PolygonPatch(poly, facecolor=color, linewidth=0.1))
-        ax.autoscale()
-        ax.set_title(name)
-        ax.set_xticks([])
-        ax.set_yticks([])
+        try:
+            ax = fig.add_subplot(rows, columns, i + 1)
+            ax.axis("equal")
+            ax.add_patch(PolygonPatch(poly, facecolor=color, linewidth=0.1))
+            ax.autoscale()
+            ax.set_title(name)
+            ax.set_xticks([])
+            ax.set_yticks([])
+        except ValueError as e:
+            continue
     plt.show()
