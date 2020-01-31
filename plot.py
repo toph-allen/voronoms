@@ -57,3 +57,17 @@ def polygon_subplots(polys, names=None, columns=2, figsize=(12, 24), dpi=300):
         except ValueError as e:
             continue
     plt.show()
+
+
+def points(x, y, name=None, xlim=None, ylim=None, figsize=(12, 12), dpi=300):
+    fig = plt.figure(figsize=figsize, dpi=dpi)
+    ax = fig.add_subplot(1, 1, 1)
+    ax.axis("equal")
+    ax.scatter(x, y)
+    ax.autoscale()
+    ax.set_title(name)
+    if xlim is not None:
+        ax.set_xlim(xlim)
+    if ylim is not None:
+        ax.set_ylim(ylim)
+    plt.show()
