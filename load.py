@@ -15,12 +15,16 @@ from tqdm.notebook import tqdm
 
 
 DATA_DIR = Path(data.__file__).parent
+CACHE_DIR = Path(DATA_DIR, "cache")
+if not CACHE_DIR.exists():
+    CACHE_DIR.mkdir(parents=True)
+
 
 
 def check_cache(pickle_name):
     def decorator(fn):
         def decorated(*args, **kwargs):
-            pickle_path = Path(DATA_DIR, pickle_name)
+            pickle_path = Path(CACHE_DIR, pickle_name)
             if pickle_path.exists():
                 with open(pickle_path, "rb") as f:
                     print("Loading cached '{}'.".format(pickle_name))
