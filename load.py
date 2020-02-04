@@ -35,9 +35,7 @@ def check_cache(pickle_name):
                 pickle.dump(built_dataset, f)
             print("Saved '{}' to cache.".format(pickle_name))
             return built_dataset
-
         return decorated
-
     return decorator
 
 

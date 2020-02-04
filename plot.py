@@ -32,7 +32,7 @@ def polygons(polys, name=None, xlim=None, ylim=None, figsize=(12, 12), dpi=300):
         ax.set_xlim(xlim)
     if ylim is not None:
         ax.set_ylim(ylim)
-    plt.show()
+    return fig
 
 
 def polygon_subplots(polys, names=None, columns=2, figsize=(12, 24), dpi=300):

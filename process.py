@@ -6,7 +6,7 @@ from shapely.ops import unary_union
 from tqdm.notebook import tqdm #TODO: make this conditional on verbose option
 
 
-def admin_polygons(country, admin_level, geonames, shapes, clean=None):
+def make_admin_polygons(country, admin_level, geonames, shapes, clean=None):
     admin_geonames = get_admin_geonames(country, admin_level, geonames)
     voronoi_geonames = get_voronoi_geonames(country, admin_level, geonames)
 
