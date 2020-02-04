@@ -32,7 +32,7 @@ def make_admin_polygons(country, admin_level, geonames, shapes, clean=None):
         )
     print("Done.")
 
-    if clean is None:
+    if clean is None or clean == "none":
         pass
     elif clean == "cutoff":
         print("Cleaning polygons...")
