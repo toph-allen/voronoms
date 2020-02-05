@@ -1,6 +1,7 @@
 from voronoms import load, process, plot, export
 from pathlib import Path
 import argparse
+import matplotlib.pyplot as plt
 
 """
 This script generates Voronoms polygons for a requested set of countries and
@@ -98,6 +99,7 @@ if __name__ == "__main__":
             if "png" in formats:
                 png_filename = Path(png_dir, "{}.png".format(task_name))
                 plot.polygons(admin_polygons).savefig(png_filename)
+                plt.close("all")
             print("Created files for {}.".format(task_name))
         finally:
             if args.logfile:
