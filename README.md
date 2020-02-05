@@ -1,4 +1,8 @@
-# VoroNoms: an approximate set of admin area polygons for the GeoNames gazetteer
+# Voronoms: an approximate set of admin area polygons for and from the GeoNames gazetteer
+
+Voronoms is a set of approximate polygons representing the boundaries of administrative areas in the GeoNames dataset, and a set of Python scripts to generate those areas from the coordinates of GeoNames points.
+
+[GeoNames](https://www.geonames.org) is a free (creative commons-licensed) dataset of place names (a.k.a. a gazetteer).
 
 ## `generate_voronoms.py`
 
@@ -13,3 +17,5 @@ The script accepts the following arguments:
 - `--formats`, `-f`: The formats to save polygons in. Any combination of "json", "txt", and "png"; all three by default.
 - `--dir`, `-d`: Where to save generated files. By default, a folder named "export" is created in the directory from which the script is run.
 - `--combine-format-folders`: If this option is present, the GeoJSON, tab-delimited text, and PNG files will be saved in the top level of the export directory. Otherwise, they'll be saved in separate subfolders named "json", "txt", and "png".
+
+
