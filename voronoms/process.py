@@ -3,7 +3,7 @@ import numpy as np
 from scipy.spatial import Voronoi
 from shapely.geometry import Polygon, MultiPolygon
 from shapely.ops import unary_union
-from tqdm.notebook import tqdm #TODO: make this conditional on verbose option
+from tqdm import tqdm #TODO: make this conditional on verbose option
 
 
 def make_admin_polygons(country, admin_level, geonames, shapes, clean=None):

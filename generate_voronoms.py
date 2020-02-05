@@ -19,18 +19,18 @@ if __name__ == "__main__":
 
     # Sort out output directories
     if args.combine_format_folders or len(formats) == 1:
-        json_dir = table_dir = fig_dir = export_dir
+        json_dir = txt_dir = fig_dir = export_dir
         if not export_dir.exists():
             export_dir.mkdir(parents=True)
     else:
         json_dir = Path(export_dir, "json")
-        table_dir = Path(export_dir, "txt")
+        txt_dir = Path(export_dir, "txt")
         png_dir = Path(export_dir, "png")
         if "json" in formats:
             if not json_dir.exists():
                 json_dir.mkdir(parents=True)
         if "txt" in formats:
-            if not table_dir.exists():
+            if not txt_dir.exists():
                 txt_dir.mkdir(parents=True)
         if "png" in formats:
             if not png_dir.exists():
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     # If these arguments aren't present, we will go through ALL of the countries
     countries = args.countries if args.countries else geonames.country_code.dropna().unique()
     admin_levels = args.admin_levels if args.admin_levels else [1, 2, 3]
-    to_process = [(country, admin) for country in countries for admin in args.admin_levels]
+    to_process = [(country, admin) for country in countries for admin in admin_levels]
 
 
     for country, admin_level in to_process:
@@ -74,7 +74,7 @@ if __name__ == "__main__":
             export.geonames_json(admin_geonames, admin_polygons, json_filename)
         if "txt" in formats:
             txt_filename = Path(txt_dir, "{}.txt".format(task_name))
-            export.geonames_table(admin_geonames, admin_polygons, table_filename)
+            export.geonames_table(admin_geonames, admin_polygons, txt_filename)
         if "png" in formats:
             png_filename = Path(png_dir, "{}.png".format(task_name))
             plot.polygons(admin_polygons).savefig(png_filename)
