@@ -44,30 +44,8 @@ def delete_cached(pickle_name):
     pickle_path.unlink(missing_ok=True)
 
 
-@check_cache("geonames.pickle")
-def geonames(include_admin5=False):
-    geonames = base_geonames()
-
-    points = []
-    for coords in tqdm(zip(geonames.longitude, geonames.latitude), total=len(geonames)):
-        points.append(shapely.geometry.point.Point(coords))
-    geonames["points"] = points
-
-    if include_admin5:
-        admin5_path = geonames_file("adminCode5.txt")
-        admincode5 = pd.read_table(
-            admin5_path,
-            names=["geonameid", "admin5_code"],
-            dtype={"geonameid": np.int64, "admin5_code": str},
-            nrows=None,
-            index_col="geonameid",
-        )
-        geonames = geonames.merge(right=admincode5, how="left", on="geonameid")
-
-    return geonames
-
-
-def base_geonames():
+# @check_cache("geonames.pickle")
+def geonames(include_points=True, include_admin5=False):
     geonames_path = geonames_file("allCountries.txt")
     col_names = [
         "geonameid",
@@ -118,6 +96,24 @@ def base_geonames():
         nrows=None,
         index_col="geonameid",
     )
+
+    if include_points:
+        points = []
+        for coords in tqdm(zip(geonames.longitude, geonames.latitude), total=len(geonames)):
+            points.append(shapely.geometry.point.Point(coords))
+        geonames["points"] = points
+
+    if include_admin5:
+        admin5_path = geonames_file("adminCode5.txt")
+        admincode5 = pd.read_table(
+            admin5_path,
+            names=["geonameid", "admin5_code"],
+            dtype={"geonameid": np.int64, "admin5_code": str},
+            nrows=None,
+            index_col="geonameid",
+        )
+        geonames = geonames.merge(right=admincode5, how="left", on="geonameid")
+
     return geonames
 
 
