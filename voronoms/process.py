@@ -19,7 +19,6 @@ def make_admin_polygons(country, admin_level, geonames, shapes, clean=None):
     # Draw the Voronoi diagram
     print("Creating Voronoi diagram...")
     country_voronoi = Voronoi([x.coords[0] for x in voronoi_geonames.points])
-    print("Done.")
 
     # Polygon-generating loop
     admin_polygons = []
@@ -30,18 +29,15 @@ def make_admin_polygons(country, admin_level, geonames, shapes, clean=None):
                 admin_geoname, geonames, voronoi_geonames, country_voronoi, country_outline
             )
         )
-    print("Done.")
 
     if clean is None or clean == "none":
         pass
     elif clean == "cutoff":
         print("Cleaning polygons...")
         admin_polygons = clean_polygons_max_diff_cutoff(admin_polygons)
-        print("Done")
     elif clean == "simple":
         print("Cleaning polygons...")
         admin_polygons = clean_polygons_simple(admin_polygons)
-        print("Done.")
 
     return admin_polygons
 
