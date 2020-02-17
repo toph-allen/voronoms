@@ -12,9 +12,9 @@ If you have admin-level spatial data and want to map it, GeoNames's free offerin
 
 ## How does Voronoms make outlines from points?
 
-Voronoms's approach roughly follows the methods laid out in [the paper by Alani et al.](https://eprints.soton.ac.uk/255705/1/Alani_IJGIS2001.pdf), "Voronoi-based region approximation for geographical information retrieval with gazetteers".
+Voronoms's approach roughly follows the methods laid out in [Alani et al.'s paper](https://eprints.soton.ac.uk/255705/1/Alani_IJGIS2001.pdf) "Voronoi-based region approximation for geographical information retrieval with gazetteers".
 
-Voronoms draws a [Voronoi diagram](https://en.wikipedia.org/wiki/Voronoi_diagram) from the points of GeoNames data in a country. It groups the cells the Voronoi diagram by the admin region they're contained in, joins adjacent cells into single polygons, and cleans the data with a few heuristics. It also uses GeoNames's country outlines data to cut out the borders of countries.
+Voronoms draws a [Voronoi diagram](https://en.wikipedia.org/wiki/Voronoi_diagram) from the points of GeoNames data in a country. It groups the cells of the Voronoi diagram by the admin region they're contained in, joins adjacent cells into single polygons, and cleans the data with a few heuristics. It also uses GeoNames's country outlines data to cut out the borders of countries.
 
 
 ## How well does Voronoms work, and what does it look like?
@@ -42,12 +42,18 @@ DE-2 | CA-2 | GB-3
 
 ## How can I use Voronoms?
 
-The results of the current version of the Voronoms algorithm ~~are~~ will be posted in this repo's Releases. There, you'll find downloads of the shapes in GeoJSON format, as tab-separated tables with GeoNameID and GeoJSON columns, and as PNG maps plots. These datasets include admin levels 1–3 for all countries, except where the algorithm was unable to process a level/country due to a lack of data.
+The files produced by the current version of the Voronoms algorithm are available as a [GitHub Release](https://github.com/toph-allen/voronoms/releases).
 
+There, you'll find three zip files containing Voronoms exports in three formats, the first two of which mirror the formats of GeoNames's country outlines:
+- Separate GeoJSON files, named for the country and administrative level they represent, e.g. `"GB-2.json"`. Each GeoJSON object has a `geoNameId` property linking it to a GeoNames object.
+- Separate tab-separated tables, named by country and admin level, e.g. `"GB-2.txt"`. Tables have two columns, `geoNameId` and `geoJSON`.
+- PNG plots of the boundaries for each country and admin level.
 
-## `generate_voronoms.py`
+The zip filenames include the version of Voronoms that created them and the download date of the GeoNames file from which they were generated: `"voronoms-{format}-{voronoms-version}-{geonames-date}.zip"`.
 
-This script generates Voronoms polygons for a requested set of countries and admin levels and writes them to disk. It is able to produce GeoJSON files and tab-separated text files, mirroring the two ways that GeoNames's country outlines are available. It can also output PNG plots of the shapes it has created.
+## Generating Voronoms
+
+The script `"generate_voronoms.py"` script generates Voronoms polygons for a requested set of countries and admin levels and writes them to disk. It is able to produce GeoJSON files and tab-separated text files, mirroring the two ways that GeoNames's country outlines are available. It can also output PNG plots of the shapes it has created.
 
 The script accepts the following arguments:
 

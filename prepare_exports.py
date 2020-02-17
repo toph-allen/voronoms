@@ -9,11 +9,9 @@ from voronoms.load import geonames_file
 VORONOMS_VER = "1.0.0"
 EXPORT_DIR = Path("export")
 
-
 mtime = os.path.getmtime(geonames_file("allCountries.txt"))
 mdate = date.fromtimestamp(mtime).isoformat()
 ddate = date.fromtimestamp(mtime).strftime("%Y.%m.%d")
-
 
 for fmt in ["json", "txt", "png"]:
     fmt_dir = Path(EXPORT_DIR, fmt)
