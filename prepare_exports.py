@@ -21,7 +21,7 @@ for fmt in ["json", "txt", "png"]:
 
 
 
-    zipname = f"voronoms-{fmt}-{VORONOMS_VER}-{ddate}.zip"
+    zipname = f"voronoms-{VORONOMS_VER}-{ddate}-{fmt}.zip"
     zippath = Path(EXPORT_DIR, zipname)
 
     with ZipFile(zippath, "w") as z:

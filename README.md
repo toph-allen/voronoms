@@ -49,7 +49,7 @@ There, you'll find three zip files containing Voronoms exports in three formats,
 - Separate tab-separated tables, named by country and admin level, e.g. `"GB-2.txt"`. Tables have two columns, `geoNameId` and `geoJSON`.
 - PNG plots of the boundaries for each country and admin level.
 
-The zip filenames include the version of Voronoms that created them and the download date of the GeoNames file from which they were generated: `"voronoms-{format}-{voronoms-version}-{geonames-date}.zip"`.
+The zip filenames include the version of Voronoms that created them and the download date of the GeoNames file from which they were generated: `"voronoms-{voronoms-version}-{geonames-date}-{format}.zip"`.
 
 ## Generating Voronoms
 
