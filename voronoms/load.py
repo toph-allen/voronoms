@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import geopandas as gpd
 from scipy.spatial import Voronoi, voronoi_plot_2d
 import matplotlib.pyplot as plt
 import shapely
@@ -18,7 +17,6 @@ DATA_DIR = Path(data.__file__).parent
 CACHE_DIR = Path(DATA_DIR, "cache")
 if not CACHE_DIR.exists():
     CACHE_DIR.mkdir(parents=True)
-
 
 
 def check_cache(pickle_name):
